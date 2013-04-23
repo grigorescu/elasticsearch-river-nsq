@@ -1,5 +1,8 @@
 package ly.bit.nsq.lookupd;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,36 +11,30 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-public class SyncLookupd extends AbstractLookupd {
-
-    private static Logger LOGGER = Logger.getLogger(SyncLookupd.class.getName());
+public class BasicLookupd extends AbstractLookupd {
+	private static final Logger log = LoggerFactory.getLogger(AbstractLookupd.class);
 
 	@Override
 	public List<String> query(String topic) {
+		String urlString = this.addr + "/lookup?topic=" + topic;
 		URL url = null;
 		try {
-            if (this.addr.endsWith(("/"))) {
-                url = new URL(this.addr + "lookup?topic=" + topic);
-            } else {
-                url = new URL(this.addr + "/lookup?topic=" + topic);
-            }
+			url = new URL(urlString);
 		} catch (MalformedURLException e) {
-            LOGGER.log(Level.SEVERE, e.getMessage(), e);
+			log.error("Malformed Lookupd URL: {}", urlString);
 		}
 		try {
 			InputStream is = url.openStream();
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
 			return parseResponseForProducers(br);
 		} catch (IOException e) {
-            LOGGER.log(Level.WARNING, e.getMessage(), e);
+			log.error("Problem reading lookupd response: ", e);
 		}
 		return new LinkedList<String>();
 	}
 
-	public SyncLookupd(String addr){
+	public BasicLookupd(String addr){
 		this.addr = addr;
 	}
 

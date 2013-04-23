@@ -1,22 +1,26 @@
 package ly.bit.nsq.lookupd;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public abstract class AbstractLookupd {
+	private static final Logger log = LoggerFactory.getLogger(AbstractLookupd.class);
+	
+	protected String addr;
 
-    private static Logger LOGGER = Logger.getLogger(AbstractLookupd.class.getName());
-    protected String addr;
+	public String getAddr() {
+		return addr;
+	}
 
 	/**
 	 * This should handle making a request to lookupd, and returning which producers match the channel we want
@@ -33,19 +37,16 @@ public abstract class AbstractLookupd {
 			 Iterator<JsonNode> prodItr = producers.getElements();
 			 while(prodItr.hasNext()){
 				 JsonNode producer = prodItr.next();
-                 String addr = producer.path("broadcast_address").getTextValue();
-                 if (addr == null || addr.length() == 0) {
-                     addr = producer.path("address").getTextValue();
-                 }
+				 String addr = producer.path("address").getTextValue();
 				 int tcpPort = producer.path("tcp_port").getIntValue();
 				 outputs.add(addr + ":" + tcpPort);
 			 }
 		} catch (JsonParseException e) {
-            LOGGER.log(Level.WARNING, e.getMessage(), e);
+			log.error("Error parsing json from lookupd:", e);
 		} catch (JsonMappingException e) {
-            LOGGER.log(Level.WARNING, e.getMessage(), e);
+			log.error("Error mapping json from lookupd:", e);
 		} catch (IOException e) {
-            LOGGER.log(Level.WARNING, e.getMessage(), e);
+			log.error("Error reading response from lookupd:", e);
 		}
 		return outputs;
 	}

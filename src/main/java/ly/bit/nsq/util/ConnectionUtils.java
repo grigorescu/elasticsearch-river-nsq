@@ -1,11 +1,10 @@
-package ly.bit.nsq;
+package ly.bit.nsq.util;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ConnectionUtils {
-    private static final Logger LOGGER = Logger.getLogger(ConnectionUtils.class.getName());
-
+	private static final Logger log = LoggerFactory.getLogger(ConnectionUtils.class);
 	private static final char NL = '\n';
 	public static final String MAGIC_V2 = "  V2";
 
@@ -17,16 +16,11 @@ public final class ConnectionUtils {
 		}
 		commandBuilder.append(NL);
 		String out = commandBuilder.toString();
-
-        LOGGER.log(Level.FINE, out);
+		log.debug("Cmd: {}", out);
 		return out;
 	}
-
-    public static String pub(String topic){
-        return command("PUB", topic);
-    }
-
-    public static String subscribe(String topic, String channel, String shortId, String longId){
+	
+	public static String subscribe(String topic, String channel, String shortId, String longId){
 		// TODO: check validity of topc and channel
 		return command("SUB", topic, channel, shortId, longId);
 	}
@@ -34,11 +28,7 @@ public final class ConnectionUtils {
 	public static String ready(int count){
 		return command("RDY", Integer.toString(count));
 	}
-
-    public static String touch(byte[] id) {
-        return command("TOUCH", new String(id));
-    }
-
+	
 	public static String finish(byte[] id){
 		return command("FIN", new String(id));
 	}
