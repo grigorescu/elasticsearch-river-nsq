@@ -1,71 +1,10 @@
-NSQ River Plugin for ElasticSearch
-==================================
+NSQ River Plugin for Bro + ElasticSearch
+========================================
 
-The NSQ River plugin allows index bulk format messages into elasticsearch.
+Note: _This is a special-case of the more general NSQ river plugin, designed for use with the Bro Network Security Monitor._
 
-Much thanks to the bitly NSQ team for providing the NSQ java api and Elasticsearch for their reference implementation of the elasticsearch-river-mq.
-Alot of the structure / code was patterned from these two pieces.
+When sending Bro logs to ElasticSearch, the ElasticSearch cluster can fall behind under heavy load. Instead of this traditional "push" model, an ElasticSearch river is a plugin for ElasticSearch, that "pulls" data when ElasticSearch is ready for more. This plugin has ElasticSearch pull data from NSQ - an HTTP queue designed and used by bit.ly.
 
-In order to install the plugin, simply run: `bin/plugin -install elasticsearch/elasticsearch-river-nsq/1.0.1`.
+To use this, you'll need to setup NSQ and use the Bro Log::WRITER_ELASTICSEARCH_NSQ log writer.
 
-    --------------------------------------------------------
-    | NSQ Plugin      | ElasticSearch    | NSQ Daemon      |
-    --------------------------------------------------------
-    | master          | 0.90 -> master   | 0.2.18          |
-    --------------------------------------------------------
-    | 1.0.1           | 0.19 -> 0.20.5   | 0.2.18          |
-    --------------------------------------------------------
-
-Binary releases are @ :
-
-    https://sourceforge.net/projects/es-river-nsq/files/
-
-Installation of binary releases:
-
-    ./plugin -url https://downloads.sourceforge.net/project/es-river-nsq/elasticsearch-river-nsq-1.0.1.zip -install elasticsearch-river-nsq
-
-NSQ River allows to automatically index a [NSQ](https://github.com/bitly/nsq) topic / channel. The format of the messages follows the bulk api format:
-
-	{ "index" : { "_index" : "twitter", "_type" : "tweet", "_id" : "1" } }
-	{ "tweet" : { "text" : "this is a tweet" } }
-	{ "delete" : { "_index" : "twitter", "_type" : "tweet", "_id" : "2" } }
-	{ "create" : { "_index" : "twitter", "_type" : "tweet", "_id" : "1" } }
-	{ "tweet" : { "text" : "another tweet" } }    
-
-Creating the nsq river is as simple as (all configuration parameters are provided, with default values):
-
-    curl -XPUT 'localhost:9200/_river/my_river/_meta' -d '{
-        "type" : "nsq",
-        "nsq" : {
-            "address" : "http://localhost:4161/",
-            "topic" : "elasticsearch",
-            "channel" : "elasticsearch",
-            "max_inflight" : 10,
-            "max_retries" : 5,
-            "requeue_deplay" : 5,
-        },
-        "index" : {
-            "workers" : 10,
-            "bulk_size" : 100,
-            "bulk_timeout" : "10ms",
-            "ordered" : false
-        }
-    }'
-
-Addresses(host-port pairs) also available in order to load balance nsqlookup instances.
-	
-		...
-	    "nsq" : {
-	    	"addresses" : [
-	        	{
-	        		"address" : "http://localhost:4161/",
-	        	},
-	        	{
-	        		"address" : "http://localhost:4162/",
-	        	}
-	        ],
-	        ...
-		}
-		...
-
-The river is automatically bulking queue messages if the queue is overloaded, allowing for faster catchup with the messages streamed into the queue. The `ordered` flag allows to make sure that the messages will be indexed in the same order as they arrive in the query by blocking on the bulk request before picking up the next data to be indexed. It can also be used as a simple way to throttle indexing.
+TODO: More install instructions here.
