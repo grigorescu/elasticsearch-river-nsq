@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 
 
 public abstract class NSQReader {
-	private static final Logger log = LoggerFactory.getLogger(NSQReader.class);
+	//private static final Logger log = LoggerFactory.getLogger(NSQReader.class);
 	
 	protected int requeueDelay;
 	protected int maxRetries;
@@ -70,7 +70,7 @@ public abstract class NSQReader {
 	}
 	
 	public void shutdown(){
-		log.info("NSQReader received shutdown signal, shutting down connections");
+		//log.info("NSQReader received shutdown signal, shutting down connections");
 		for(Connection conn: this.connections.values()){
 			conn.close();
 		}
@@ -94,7 +94,7 @@ public abstract class NSQReader {
 			try {
 				msg.getConn().send(ConnectionUtils.requeue(msg.getId(), newDelay));
 			} catch (NSQException e) {
-				log.error("Error requeueing message to {}, will close the connection", msg.getConn());
+				//log.error("Error requeueing message to {}, will close the connection", msg.getConn());
 				msg.getConn().close();
 			}
 		}
@@ -104,7 +104,7 @@ public abstract class NSQReader {
 		try {
 			msg.getConn().send(ConnectionUtils.finish(msg.getId()));
 		} catch (NSQException e) {
-			log.error("Error finishing message {} (from {}). Will close connection.", msg, msg.getConn());
+			//log.error("Error finishing message {} (from {}). Will close connection.", msg, msg.getConn());
 			msg.getConn().close();
 		}
 	}
